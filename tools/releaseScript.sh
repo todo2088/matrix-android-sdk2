@@ -63,7 +63,7 @@ git commit -a -m "Setting version for the release ${version}"
 
 printf "\n================================================================================\n"
 printf "Downloading Element Android source ${version}...\n"
-
+mkdir "./tmp/"
 curl  https://github.com/vector-im/element-android/archive/refs/tags/v${version}.zip -i -L -o ./tmp/release.zip
 
 printf "\n================================================================================\n"
