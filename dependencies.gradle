@@ -9,8 +9,8 @@ ext.versions = [
 
 def gradle = "8.4.2"
 // Ref: https://kotlinlang.org/releases.html
-def kotlin = "1.9.24"
-def kotlinCoroutines = "1.8.1"
+def kotlin = "1.8.22"
+def kotlinCoroutines = "1.7.3"
 def dagger = "2.51.1"
 def firebaseBom = "33.1.1"
 def appDistribution = "16.0.0-beta08"

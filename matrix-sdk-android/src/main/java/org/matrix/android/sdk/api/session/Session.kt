@@ -76,6 +76,11 @@ interface Session {
     val isOpenable: Boolean
 
     /**
+     * The session is opened
+     */
+    val isOpened: Boolean
+
+    /**
      * Useful shortcut to get access to the userId.
      */
     val myUserId: String
@@ -330,4 +335,5 @@ interface Session {
      * Debug API, return the list of all RealmConfiguration used by this session.
      */
     fun getRealmConfigurations(): List<RealmConfiguration>
+
 }

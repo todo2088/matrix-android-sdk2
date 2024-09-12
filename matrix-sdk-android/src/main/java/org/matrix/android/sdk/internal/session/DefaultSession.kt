@@ -143,6 +143,9 @@ internal class DefaultSession @Inject constructor(
     override val isOpenable: Boolean
         get() = sessionParamsStore.get(sessionId)?.isTokenValid ?: false
 
+    override val isOpened: Boolean
+        get() = sessionState.isOpen
+
     @MainThread
     override fun open() {
         sessionState.setIsOpen(true)

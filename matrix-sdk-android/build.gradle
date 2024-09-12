@@ -4,12 +4,23 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'realm-android'
 apply plugin: "org.jetbrains.dokka"
+apply plugin: "maven-publish"
 
 if (project.hasProperty("coverage")) {
     apply plugin: 'jacoco'
 }
 
 buildscript {
+    // 检查 'dependencies.gradle' 文件是否存在
+    if (file('dependencies.gradle').exists()) {
+        apply from: 'dependencies.gradle'
+    }
+
+// 检查 'dependencies_groups.gradle' 文件是否存在
+    if (file('dependencies_groups.gradle').exists()) {
+        apply from: 'dependencies_groups.gradle'
+    }
+
     repositories {
         // Do not use `mavenCentral()`, it prevents Dependabot from working properly
         maven {
@@ -62,7 +73,7 @@ android {
         // that the app's state is completely cleared between tests.
         testInstrumentationRunnerArguments clearPackageData: 'true'
 
-        buildConfigField "String", "SDK_VERSION", "\"1.6.20\""
+        buildConfigField "String", "SDK_VERSION", "\"1.6.21\""
 
         buildConfigField "String", "GIT_SDK_REVISION", "\"${gitRevision()}\""
         buildConfigField "String", "GIT_SDK_REVISION_UNIX_DATE", "\"${gitRevisionUnixDate()}\""
@@ -129,10 +140,11 @@ android {
         buildConfig true
     }
 
-    packaging {
-        pickFirsts.add("META-INF/LICENSE.md")
-        pickFirsts.add("META-INF/LICENSE-notice.md")
-        pickFirsts.add("MANIFEST.MF")
+    packagingOptions {
+        // Use pickFirst to resolve duplicates
+        pickFirst 'META-INF/LICENSE.md'
+        pickFirst 'META-INF/LICENSE-notice.md'
+        pickFirst 'MANIFEST.MF'
     }
 }
 
@@ -253,4 +265,19 @@ dependencies {
     androidTestImplementation libs.tests.timberJunitRule
 
     androidTestUtil libs.androidx.orchestrator
+}
+
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'io.github.todo2088'
+                artifactId = 'matrix-android-sdk2'
+                version = '1.6.21'
+            }
+        }
+    }
 }
