@@ -10,11 +10,12 @@ dependencies {
 
 task javadocJar(type: Jar, dependsOn: 'javadoc') {
     from javadoc.destinationDir
-    classifier = 'javadoc'
+    archiveClassifier.set('javadoc')
 }
+
 task sourcesJar(type: Jar, dependsOn: 'classes') {
     from sourceSets.main.allSource
-    classifier = 'sources'
+    archiveClassifier.set('sources')
 }
 
 sourceSets {
