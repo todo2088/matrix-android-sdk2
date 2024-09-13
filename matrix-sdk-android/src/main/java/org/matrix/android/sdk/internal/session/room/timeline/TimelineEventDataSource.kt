@@ -55,14 +55,14 @@ internal class TimelineEventDataSource @Inject constructor(
         return LiveTimelineEvent(monarchy, taskExecutor.executorScope, timelineEventMapper, roomId, eventId)
     }
 
-    fun getAttachmentMessages(roomId: String): List<TimelineEvent> {
+    fun getAttachmentMessages(roomId: String,filters:(TimelineEvent)->Boolean = {it.root.isImageMessage() || it.root.isVideoMessage()}): List<TimelineEvent> {
         // TODO pretty bad query.. maybe we should denormalize clear type in base?
         return realmSessionProvider.withRealm { realm ->
             TimelineEventEntity.whereRoomId(realm, roomId)
                     .sort(TimelineEventEntityFields.ROOT.ORIGIN_SERVER_TS, Sort.ASCENDING)
                     .distinct(TimelineEventEntityFields.EVENT_ID)
                     .findAll()
-                    ?.mapNotNull { timelineEventMapper.map(it).takeIf { it.root.isImageMessage() || it.root.isVideoMessage() } }
+                    ?.mapNotNull { timelineEventMapper.map(it).takeIf { timelineEvent -> filters.invoke(timelineEvent) } }
                     .orEmpty()
         }
     }

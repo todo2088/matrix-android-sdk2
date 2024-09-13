@@ -17,6 +17,8 @@
 package org.matrix.android.sdk.api.session.room.timeline
 
 import androidx.lifecycle.LiveData
+import org.matrix.android.sdk.api.session.events.model.isImageMessage
+import org.matrix.android.sdk.api.session.events.model.isVideoMessage
 import org.matrix.android.sdk.api.util.Optional
 
 /**
@@ -54,7 +56,7 @@ interface TimelineService {
     /**
      * Returns a snapshot list of TimelineEvent with EventType.MESSAGE and MessageType.MSGTYPE_IMAGE or MessageType.MSGTYPE_VIDEO.
      */
-    fun getAttachmentMessages(): List<TimelineEvent>
+    fun getAttachmentMessages(filters: (TimelineEvent) -> Boolean = { it.root.isImageMessage() || it.root.isVideoMessage() }): List<TimelineEvent>
 
     /**
      * Returns a snapshot list of TimelineEvent with a content relation of the given type to the given eventId.

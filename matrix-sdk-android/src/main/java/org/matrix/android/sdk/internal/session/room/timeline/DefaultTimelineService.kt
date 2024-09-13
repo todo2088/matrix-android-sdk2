@@ -96,8 +96,8 @@ internal class DefaultTimelineService @AssistedInject constructor(
         return timelineEventDataSource.getTimelineEventLive(roomId, eventId)
     }
 
-    override fun getAttachmentMessages(): List<TimelineEvent> {
-        return timelineEventDataSource.getAttachmentMessages(roomId)
+    override fun getAttachmentMessages(filters: (TimelineEvent) -> Boolean): List<TimelineEvent> {
+        return timelineEventDataSource.getAttachmentMessages(roomId, filters)
     }
 
     override fun getTimelineEventsRelatedTo(relationType: String, eventId: String): List<TimelineEvent> {
