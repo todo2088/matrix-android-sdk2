@@ -45,6 +45,8 @@ import org.matrix.android.sdk.api.session.securestorage.SharedSecretStorageServi
 import org.matrix.android.sdk.api.session.typing.TypingUsersTracker
 import org.matrix.android.sdk.api.util.md5
 import org.matrix.android.sdk.internal.crypto.secrets.DefaultSharedSecretStorageService
+import org.matrix.android.sdk.internal.crypto.tasks.CloudMediaEventTask
+import org.matrix.android.sdk.internal.crypto.tasks.DefaultCloudMediaEventTask
 import org.matrix.android.sdk.internal.crypto.tasks.DefaultRedactEventTask
 import org.matrix.android.sdk.internal.crypto.tasks.RedactEventTask
 import org.matrix.android.sdk.internal.database.EventInsertLiveObserver
@@ -432,4 +434,7 @@ internal abstract class SessionModule {
 
     @Binds
     abstract fun bindWorkManaerConfig(config: DefaultWorkManagerConfig): WorkManagerConfig
+
+    @Binds
+    abstract fun bindCloudMediaEventTask(task: DefaultCloudMediaEventTask): CloudMediaEventTask
 }

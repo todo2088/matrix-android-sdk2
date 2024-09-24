@@ -473,4 +473,12 @@ internal interface RoomAPI {
             @Query("from") from: String? = null,
             @Query("limit") limit: Int? = null,
     ): ThreadSummariesResponse
+
+    @POST(NetworkConstants.URI_API_MEDIA_PREFIX_PATH_V3 + "upload/nas")
+    suspend fun uploadNas(
+        @Body content: JsonDict,
+    ): SendResponse
+
+
+
 }

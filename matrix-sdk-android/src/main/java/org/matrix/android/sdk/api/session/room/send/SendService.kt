@@ -195,4 +195,41 @@ interface SendService {
      * Cancel all failed messages.
      */
     fun cancelAllFailedMessages()
+
+    /**
+     * Method to send a media asynchronously.
+     * @param attachment the media to send
+     * @param roomIds set of roomIds to where the media will be sent. The current roomId will be add to this set if not present.
+     *                It can be useful to send media to multiple room. It's safe to include the current roomId in this set
+     * @param rootThreadEventId when this param is not null, the Media will be sent in this specific thread
+     * @param relatesTo add a relation content to the media event
+     * @param additionalContent additional content to put in the event content
+     * @return a [Cancelable]
+     */
+    fun sendCloudMedia(
+        attachment: Content,
+        remoteToken:String,
+        roomIds: Set<String>,
+        rootThreadEventId: String? = null,
+        relatesTo: RelationDefaultContent? = null,
+        additionalContent: Content? = null,
+    ): Cancelable
+
+    /**
+     * Method to send a list of media asynchronously.
+     * @param attachments the list of media to send
+     * @param roomIds set of roomIds to where the media will be sent. The current roomId will be add to this set if not present.
+     *                It can be useful to send media to multiple room. It's safe to include the current roomId in this set
+     * @param rootThreadEventId when this param is not null, all the Media will be sent in this specific thread
+     * @param additionalContent additional content to put in the event content
+     * @return a [Cancelable]
+     */
+    fun sendCloudMedias(
+        attachments: List<Content>,
+        remoteToken:String,
+        roomIds: Set<String>,
+        rootThreadEventId: String? = null,
+        additionalContent: Content? = null,
+    ): Cancelable
+
 }

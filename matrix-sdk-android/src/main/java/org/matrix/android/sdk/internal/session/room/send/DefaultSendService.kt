@@ -29,6 +29,7 @@ import org.matrix.android.sdk.api.MatrixUrls.isMxcUrl
 import org.matrix.android.sdk.api.session.content.ContentAttachmentData
 import org.matrix.android.sdk.api.session.events.model.Content
 import org.matrix.android.sdk.api.session.events.model.Event
+import org.matrix.android.sdk.api.session.events.model.EventType
 import org.matrix.android.sdk.api.session.events.model.isAttachmentMessage
 import org.matrix.android.sdk.api.session.events.model.isTextMessage
 import org.matrix.android.sdk.api.session.events.model.toModel
@@ -50,9 +51,11 @@ import org.matrix.android.sdk.api.util.JsonDict
 import org.matrix.android.sdk.api.util.NoOpCancellable
 import org.matrix.android.sdk.api.util.TextContent
 import org.matrix.android.sdk.internal.crypto.store.IMXCommonCryptoStore
+import org.matrix.android.sdk.internal.crypto.tasks.CloudMediaEventTask
 import org.matrix.android.sdk.internal.di.SessionId
 import org.matrix.android.sdk.internal.di.WorkManagerProvider
 import org.matrix.android.sdk.internal.session.content.UploadContentWorker
+import org.matrix.android.sdk.internal.session.room.send.queue.CloudMediaQueuedTask
 import org.matrix.android.sdk.internal.session.room.send.queue.EventSenderProcessor
 import org.matrix.android.sdk.internal.session.workmanager.WorkManagerConfig
 import org.matrix.android.sdk.internal.task.TaskExecutor
@@ -74,6 +77,7 @@ internal class DefaultSendService @AssistedInject constructor(
         private val taskExecutor: TaskExecutor,
         private val localEchoRepository: LocalEchoRepository,
         private val eventSenderProcessor: EventSenderProcessor,
+        private val cloudMediaEventTask: CloudMediaEventTask,
         private val cancelSendTracker: CancelSendTracker,
         private val workManagerConfig: WorkManagerConfig,
 ) : SendService {
@@ -263,6 +267,61 @@ internal class DefaultSendService @AssistedInject constructor(
             localEchoRepository.getAllFailedEventsToResend(roomId).forEach { event ->
                 cancelSend(event.eventId)
             }
+        }
+    }
+
+    override fun sendCloudMedia(
+        attachment: Content,
+        remoteToken:String,
+        roomIds: Set<String>,
+        rootThreadEventId: String?,
+        relatesTo: RelationDefaultContent?,
+        additionalContent: Content?
+    ): Cancelable {
+        localEchoEventFactory.createEvent(roomId, EventType.MESSAGE, attachment)
+            .also { createLocalEcho(it) }
+        // Ensure that the event will not be send in a thread if we are a different flow.
+        // Like sending files to multiple rooms
+        val rootThreadId = if (roomIds.isNotEmpty()) null else rootThreadEventId
+
+        // Create an event with the media file path
+        // Ensure current roomId is included in the set
+        val allRoomIds = (roomIds + roomId).toList()
+
+        // Create local echo for each room
+        val allLocalEchoes = allRoomIds.map { roomId ->
+            localEchoEventFactory.createEvent(roomId, EventType.MESSAGE, attachment).also { event ->
+                createLocalEcho(event)
+            }
+        }
+        allLocalEchoes.forEach { event ->
+            eventSenderProcessor.postTask(
+                CloudMediaQueuedTask(
+                    event,
+                    remoteToken,
+                    cloudMediaEventTask,
+                    localEchoRepository,
+                    cancelSendTracker
+                )
+            )
+        }
+        return NoOpCancellable
+    }
+
+    override fun sendCloudMedias(
+        attachments: List<Content>,
+        remoteToken:String,
+        roomIds: Set<String>,
+        rootThreadEventId: String?,
+        additionalContent: Content?
+    ): Cancelable {
+        return attachments.mapTo(CancelableBag()) {
+            sendCloudMedia(
+                attachment = it,
+                remoteToken= remoteToken,
+                roomIds = roomIds,
+                rootThreadEventId = rootThreadEventId
+            )
         }
     }
 
